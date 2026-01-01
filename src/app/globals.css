@@ -1,0 +1,272 @@
+@import "tailwindcss";
+
+/* ============================================
+   SISTEMA DE DESIGN TOKENS - CRM LEADFLOW
+   Colores en formato OKLCH para mejor contraste
+   ============================================ */
+
+@theme inline {
+  /* Radius base */
+  --radius: 0.625rem;
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+
+  /* Animaciones */
+  --animate-accordion-down: accordion-down 0.2s ease-out;
+  --animate-accordion-up: accordion-up 0.2s ease-out;
+}
+
+/* ============================================
+   MODO CLARO (por defecto)
+   ============================================ */
+:root {
+  /* Base */
+  --background: oklch(0.985 0 0);
+  --foreground: oklch(0.145 0.015 260);
+
+  /* Cards y Popovers */
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0.015 260);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0.015 260);
+
+  /* Primary - Azul profesional */
+  --primary: oklch(0.55 0.18 250);
+  --primary-foreground: oklch(0.98 0 0);
+
+  /* Secondary */
+  --secondary: oklch(0.96 0.01 260);
+  --secondary-foreground: oklch(0.25 0.03 260);
+
+  /* Muted */
+  --muted: oklch(0.96 0.005 260);
+  --muted-foreground: oklch(0.45 0.02 260);
+
+  /* Accent */
+  --accent: oklch(0.94 0.01 260);
+  --accent-foreground: oklch(0.25 0.03 260);
+
+  /* Destructive */
+  --destructive: oklch(0.58 0.22 25);
+  --destructive-foreground: oklch(0.98 0 0);
+
+  /* Estados del Pipeline - Semánticos */
+  --status-nuevo: oklch(0.65 0.18 250);
+  --status-contactado: oklch(0.62 0.16 280);
+  --status-cualificado: oklch(0.68 0.18 50);
+  --status-reunion: oklch(0.62 0.18 320);
+  --status-presupuestado: oklch(0.60 0.16 200);
+  --status-negociacion: oklch(0.72 0.18 85);
+  --status-ganado: oklch(0.60 0.18 145);
+  --status-perdido: oklch(0.55 0.18 25);
+
+  /* Charts */
+  --chart-1: oklch(0.55 0.18 250);
+  --chart-2: oklch(0.60 0.18 145);
+  --chart-3: oklch(0.68 0.18 50);
+  --chart-4: oklch(0.62 0.16 280);
+  --chart-5: oklch(0.62 0.18 320);
+
+  /* Borders y Inputs */
+  --border: oklch(0.90 0.01 260);
+  --input: oklch(0.92 0.01 260);
+  --ring: oklch(0.55 0.18 250);
+
+  /* Sidebar */
+  --sidebar: oklch(0.98 0.005 260);
+  --sidebar-foreground: oklch(0.25 0.02 260);
+  --sidebar-primary: oklch(0.55 0.18 250);
+  --sidebar-primary-foreground: oklch(0.98 0 0);
+  --sidebar-accent: oklch(0.95 0.01 260);
+  --sidebar-accent-foreground: oklch(0.25 0.02 260);
+  --sidebar-border: oklch(0.92 0.01 260);
+  --sidebar-ring: oklch(0.55 0.18 250);
+}
+
+/* ============================================
+   MODO OSCURO
+   ============================================ */
+.dark {
+  --background: oklch(0.13 0.01 260);
+  --foreground: oklch(0.96 0 0);
+
+  --card: oklch(0.18 0.01 260);
+  --card-foreground: oklch(0.96 0 0);
+  --popover: oklch(0.18 0.01 260);
+  --popover-foreground: oklch(0.96 0 0);
+
+  --primary: oklch(0.65 0.15 250);
+  --primary-foreground: oklch(0.13 0.01 260);
+
+  --secondary: oklch(0.22 0.01 260);
+  --secondary-foreground: oklch(0.96 0 0);
+
+  --muted: oklch(0.22 0.01 260);
+  --muted-foreground: oklch(0.65 0.01 260);
+
+  --accent: oklch(0.25 0.01 260);
+  --accent-foreground: oklch(0.96 0 0);
+
+  --destructive: oklch(0.55 0.20 25);
+  --destructive-foreground: oklch(0.98 0 0);
+
+  /* Estados del Pipeline en dark mode */
+  --status-nuevo: oklch(0.70 0.15 250);
+  --status-contactado: oklch(0.68 0.14 280);
+  --status-cualificado: oklch(0.72 0.16 50);
+  --status-reunion: oklch(0.68 0.15 320);
+  --status-presupuestado: oklch(0.65 0.14 200);
+  --status-negociacion: oklch(0.75 0.16 85);
+  --status-ganado: oklch(0.65 0.16 145);
+  --status-perdido: oklch(0.60 0.16 25);
+
+  --border: oklch(0.28 0.01 260);
+  --input: oklch(0.25 0.01 260);
+  --ring: oklch(0.65 0.15 250);
+
+  --sidebar: oklch(0.15 0.01 260);
+  --sidebar-foreground: oklch(0.96 0 0);
+  --sidebar-primary: oklch(0.65 0.15 250);
+  --sidebar-primary-foreground: oklch(0.13 0.01 260);
+  --sidebar-accent: oklch(0.22 0.01 260);
+  --sidebar-accent-foreground: oklch(0.96 0 0);
+  --sidebar-border: oklch(0.28 0.01 260);
+  --sidebar-ring: oklch(0.65 0.15 250);
+}
+
+/* ============================================
+   ESTILOS BASE - Optimizado para pantalla grande
+   ============================================ */
+* {
+  border-color: var(--border);
+}
+
+html {
+  font-size: 18px; /* Base más grande para pantallas grandes */
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-feature-settings: "rlig" 1, "calt" 1;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+/* ============================================
+   ANIMACIONES
+   ============================================ */
+@keyframes accordion-down {
+  from {
+    height: 0;
+  }
+  to {
+    height: var(--radix-accordion-content-height);
+  }
+}
+
+@keyframes accordion-up {
+  from {
+    height: var(--radix-accordion-content-height);
+  }
+  to {
+    height: 0;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slide-in-from-top {
+  from {
+    transform: translateY(-10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slide-in-from-bottom {
+  from {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes pulse-ring {
+  0% {
+    box-shadow: 0 0 0 0 var(--primary);
+  }
+  70% {
+    box-shadow: 0 0 0 8px transparent;
+  }
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+}
+
+/* ============================================
+   SCROLLBAR PERSONALIZADA
+   ============================================ */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--muted-foreground);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--foreground);
+}
+
+/* ============================================
+   UTILIDADES PERSONALIZADAS
+   ============================================ */
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out;
+}
+
+.animate-slide-in-top {
+  animation: slide-in-from-top 0.3s ease-out;
+}
+
+.animate-slide-in-bottom {
+  animation: slide-in-from-bottom 0.3s ease-out;
+}
+
+.animate-pulse-ring {
+  animation: pulse-ring 1.5s infinite;
+}
+
+/* Glassmorphism */
+.glass {
+  background: oklch(1 0 0 / 0.7);
+  backdrop-filter: blur(12px) saturate(180%);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
+}
+
+.dark .glass {
+  background: oklch(0.15 0.01 260 / 0.7);
+}

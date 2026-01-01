@@ -1,0 +1,6 @@
+# Override para desarrollo local
+# Uso: docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+
+services:
+  adminer:
+    profiles: []  # Siempre activo en desarrollo

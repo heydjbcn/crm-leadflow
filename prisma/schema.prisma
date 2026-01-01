@@ -1,0 +1,339 @@
+// Schema de Prisma para CRM LeadFlow
+// Base de datos: PostgreSQL
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// MODELO PRINCIPAL: LEAD
+// ============================================
+model Lead {
+  id                    Int              @id @default(autoincrement())
+
+  // Datos de contacto
+  nombre                String           @db.VarChar(255)
+  email                 String?          @db.VarChar(255)
+  telefono              String           @db.VarChar(20)
+  localidad             String?          @db.VarChar(255)
+  direccion             String?          @db.VarChar(500)
+
+  // Servicios solicitados (array de strings)
+  servicios             String[]         @default([])
+
+  // Estado del pipeline
+  estado                EstadoLead       @default(nuevo)
+
+  // Tracking de origen
+  fuente                FuenteLead       @default(landing)
+  landingId             Int?             @map("landing_id")
+  landing               Landing?         @relation(fields: [landingId], references: [id])
+
+  // UTM Parameters
+  utmSource             String?          @map("utm_source") @db.VarChar(100)
+  utmMedium             String?          @map("utm_medium") @db.VarChar(100)
+  utmCampaign           String?          @map("utm_campaign") @db.VarChar(255)
+  utmTerm               String?          @map("utm_term") @db.VarChar(255)
+  utmContent            String?          @map("utm_content") @db.VarChar(255)
+
+  // Presupuesto y venta
+  presupuestoEnviado    Decimal?         @map("presupuesto_enviado") @db.Decimal(10, 2)
+  fechaPresupuesto      DateTime?        @map("fecha_presupuesto")
+  importeVenta          Decimal?         @map("importe_venta") @db.Decimal(10, 2)
+  fechaVenta            DateTime?        @map("fecha_venta")
+  comisionCalculada     Decimal?         @map("comision_calculada") @db.Decimal(10, 2)
+  comisionPagada        Boolean          @default(false) @map("comision_pagada")
+  fechaComisionPago     DateTime?        @map("fecha_comision_pago")
+
+  // Datos adicionales
+  notas                 String?          @db.Text
+  prioridad             PrioridadLead    @default(media)
+
+  // Metadata de origen
+  ipOrigen              String?          @map("ip_origen") @db.VarChar(45)
+  userAgent             String?          @map("user_agent") @db.Text
+
+  // Timestamps
+  createdAt             DateTime         @default(now()) @map("created_at")
+  updatedAt             DateTime         @updatedAt @map("updated_at")
+
+  // Relaciones
+  actividades           Actividad[]
+
+  @@index([estado])
+  @@index([fuente])
+  @@index([landingId])
+  @@index([createdAt])
+  @@index([telefono])
+  @@index([email])
+  @@map("leads")
+}
+
+// ============================================
+// MODELO: LANDING/FUENTE
+// ============================================
+model Landing {
+  id                    Int              @id @default(autoincrement())
+  nombre                String           @db.VarChar(255)
+  slug                  String           @unique @db.VarChar(100)
+  url                   String?          @db.VarChar(500)
+  descripcion           String?          @db.Text
+
+  // API Key única para esta landing
+  apiKey                String           @unique @map("api_key") @db.VarChar(64)
+
+  // Configuración
+  activa                Boolean          @default(true)
+  notificarEmail        Boolean          @default(true) @map("notificar_email")
+  notificarPush         Boolean          @default(true) @map("notificar_push")
+
+  // Timestamps
+  createdAt             DateTime         @default(now()) @map("created_at")
+  updatedAt             DateTime         @updatedAt @map("updated_at")
+
+  // Relaciones
+  leads                 Lead[]
+  gastos                Gasto[]
+
+  @@index([slug])
+  @@index([apiKey])
+  @@map("landings")
+}
+
+// ============================================
+// MODELO: HISTORIAL DE ACTIVIDADES
+// ============================================
+model Actividad {
+  id                    Int              @id @default(autoincrement())
+  leadId                Int              @map("lead_id")
+  lead                  Lead             @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  tipo                  TipoActividad
+  descripcion           String           @db.Text
+
+  // Cambio de estado (si aplica)
+  estadoAnterior        EstadoLead?      @map("estado_anterior")
+  estadoNuevo           EstadoLead?      @map("estado_nuevo")
+
+  // Metadata adicional (JSON flexible)
+  metadata              Json?
+
+  createdAt             DateTime         @default(now()) @map("created_at")
+
+  @@index([leadId])
+  @@index([tipo])
+  @@index([createdAt])
+  @@map("actividades")
+}
+
+// ============================================
+// MODELO: USUARIO ADMIN
+// ============================================
+model Usuario {
+  id                    Int              @id @default(autoincrement())
+  email                 String           @unique @db.VarChar(255)
+  passwordHash          String           @map("password_hash") @db.VarChar(255)
+  nombre                String           @db.VarChar(255)
+
+  // Estado
+  activo                Boolean          @default(true)
+  ultimoAcceso          DateTime?        @map("ultimo_acceso")
+
+  // Preferencias
+  tema                  String           @default("system") @db.VarChar(20)
+  comisionPorDefecto    Decimal          @default(10) @map("comision_por_defecto") @db.Decimal(5, 2)
+
+  // Timestamps
+  createdAt             DateTime         @default(now()) @map("created_at")
+  updatedAt             DateTime         @updatedAt @map("updated_at")
+
+  // Relaciones
+  sesiones              Sesion[]
+  suscripcionesPush     SuscripcionPush[]
+
+  @@map("usuarios")
+}
+
+// ============================================
+// MODELO: SESIONES
+// ============================================
+model Sesion {
+  id                    Int              @id @default(autoincrement())
+  usuarioId             Int              @map("usuario_id")
+  usuario               Usuario          @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  token                 String           @unique @db.VarChar(255)
+  expiresAt             DateTime         @map("expires_at")
+
+  // Metadata de sesión
+  ipAddress             String?          @map("ip_address") @db.VarChar(45)
+  userAgent             String?          @map("user_agent") @db.Text
+
+  createdAt             DateTime         @default(now()) @map("created_at")
+
+  @@index([token])
+  @@index([usuarioId])
+  @@index([expiresAt])
+  @@map("sesiones")
+}
+
+// ============================================
+// MODELO: SUSCRIPCIONES PUSH
+// ============================================
+model SuscripcionPush {
+  id                    Int              @id @default(autoincrement())
+  usuarioId             Int              @map("usuario_id")
+  usuario               Usuario          @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  endpoint              String           @unique @db.Text
+  p256dh                String           @db.Text
+  auth                  String           @db.VarChar(255)
+
+  activa                Boolean          @default(true)
+  createdAt             DateTime         @default(now()) @map("created_at")
+
+  @@index([usuarioId])
+  @@map("suscripciones_push")
+}
+
+// ============================================
+// MODELO: INTEGRACIONES GOOGLE
+// ============================================
+model GoogleIntegration {
+  id                    Int              @id @default(autoincrement())
+  tipo                  TipoGoogleIntegration
+
+  accessToken           String?          @map("access_token") @db.Text
+  refreshToken          String?          @map("refresh_token") @db.Text
+  expiresAt             DateTime?        @map("expires_at")
+
+  // Datos de la cuenta conectada
+  accountId             String?          @map("account_id") @db.VarChar(255)
+  accountName           String?          @map("account_name") @db.VarChar(255)
+
+  activa                Boolean          @default(true)
+  createdAt             DateTime         @default(now()) @map("created_at")
+  updatedAt             DateTime         @updatedAt @map("updated_at")
+
+  @@unique([tipo])
+  @@map("google_integrations")
+}
+
+// ============================================
+// MODELO: CONFIGURACIÓN DEL SISTEMA
+// ============================================
+model Configuracion {
+  clave                 String           @id @map("config_key") @db.VarChar(100)
+  valor                 String           @map("config_value") @db.Text
+  descripcion           String?          @db.Text
+
+  createdAt             DateTime         @default(now()) @map("created_at")
+  updatedAt             DateTime         @updatedAt @map("updated_at")
+
+  @@map("configuracion")
+}
+
+// ============================================
+// MODELO: GASTOS
+// ============================================
+model Gasto {
+  id                    Int              @id @default(autoincrement())
+
+  tipo                  TipoGasto
+  concepto              String           @db.VarChar(255)
+  importe               Decimal          @db.Decimal(10, 2)
+  fecha                 DateTime         @default(now())
+
+  // Detalles adicionales
+  notas                 String?          @db.Text
+
+  // Para gastos de anuncios, opcionalmente vincular a una landing
+  landingId             Int?             @map("landing_id")
+  landing               Landing?         @relation(fields: [landingId], references: [id])
+
+  // Timestamps
+  createdAt             DateTime         @default(now()) @map("created_at")
+  updatedAt             DateTime         @updatedAt @map("updated_at")
+
+  @@index([tipo])
+  @@index([fecha])
+  @@index([landingId])
+  @@map("gastos")
+}
+
+// ============================================
+// ENUMS
+// ============================================
+
+enum EstadoLead {
+  nuevo
+  contactado
+  cualificado
+  reunion
+  presupuestado
+  negociacion
+  ganado
+  perdido
+
+  @@map("estado_lead")
+}
+
+enum FuenteLead {
+  landing
+  google_ads
+  organico
+  referido
+  redes_sociales
+  directo
+  otro
+
+  @@map("fuente_lead")
+}
+
+enum TipoActividad {
+  nota
+  llamada
+  email
+  reunion
+  whatsapp
+  cambio_estado
+  presupuesto_enviado
+  presupuesto_actualizado
+  venta_cerrada
+  venta_perdida
+  creacion
+
+  @@map("tipo_actividad")
+}
+
+enum PrioridadLead {
+  baja
+  media
+  alta
+  urgente
+
+  @@map("prioridad_lead")
+}
+
+enum TipoGoogleIntegration {
+  analytics
+  search_console
+  ads
+
+  @@map("tipo_google_integration")
+}
+
+enum TipoGasto {
+  anuncios
+  desplazamiento
+  material
+  comision_plataforma
+  otro
+
+  @@map("tipo_gasto")
+}
