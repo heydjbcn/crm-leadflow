@@ -2,7 +2,9 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
+import { useUser } from "@stackframe/stack";
 import { Bell, Sun, Moon, User, LogOut, Menu, Check, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -48,11 +50,30 @@ export function Header({ onMenuClick, showMenuButton = false }: HeaderProps) {
   const [mounted, setMounted] = React.useState(false);
   const [notificaciones, setNotificaciones] = React.useState<Notification[]>(notificacionesIniciales);
   const [userProfile, setUserProfile] = React.useState<UserProfile | null>(null);
+  const router = useRouter();
+  const user = useUser();
 
   const noLeidas = notificaciones.filter(n => !n.leida).length;
 
-  // Cargar perfil del usuario desde localStorage
+  const handleLogout = async () => {
+    await user?.signOut();
+    router.push("/handler/sign-in");
+  };
+
+  // Cargar perfil del usuario desde localStorage o StackAuth
   React.useEffect(() => {
+    // Si hay usuario de StackAuth, usar ese
+    if (user) {
+      setUserProfile({
+        nombre: user.displayName || user.primaryEmail?.split("@")[0] || "Usuario",
+        apellidos: "",
+        email: user.primaryEmail || "",
+        fotoUrl: user.profileImageUrl || null,
+      });
+      return;
+    }
+
+    // Fallback a localStorage
     const loadProfile = () => {
       const saved = localStorage.getItem(PROFILE_STORAGE_KEY);
       if (saved) {
@@ -66,7 +87,6 @@ export function Header({ onMenuClick, showMenuButton = false }: HeaderProps) {
 
     loadProfile();
 
-    // Escuchar cambios en localStorage (cuando se actualiza desde otra pestaña o el perfil)
     const handleStorage = (e: StorageEvent) => {
       if (e.key === PROFILE_STORAGE_KEY) {
         loadProfile();
@@ -74,15 +94,13 @@ export function Header({ onMenuClick, showMenuButton = false }: HeaderProps) {
     };
 
     window.addEventListener("storage", handleStorage);
-
-    // También verificar periódicamente por cambios locales
     const interval = setInterval(loadProfile, 1000);
 
     return () => {
       window.removeEventListener("storage", handleStorage);
       clearInterval(interval);
     };
-  }, []);
+  }, [user]);
 
   const marcarComoLeida = (id: number, e: React.MouseEvent) => {
     e.preventDefault();
@@ -246,7 +264,10 @@ export function Header({ onMenuClick, showMenuButton = false }: HeaderProps) {
               </Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-destructive focus:text-destructive">
+            <DropdownMenuItem
+              className="text-destructive focus:text-destructive cursor-pointer"
+              onClick={handleLogout}
+            >
               <LogOut className="mr-2 h-4 w-4" />
               Cerrar sesión
             </DropdownMenuItem>

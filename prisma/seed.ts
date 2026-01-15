@@ -21,16 +21,19 @@ async function main() {
   });
   console.log("✅ Usuario admin creado:", admin.email);
 
-  // Crear landing de ejemplo
+  // Crear landing de Solutec Ventanas (produccion)
   const landing = await prisma.landing.upsert({
     where: { slug: "solutec-ventanas" },
-    update: {},
+    update: {
+      url: "https://ventanas.jmauri.com",
+      apiKey: "lf_8a3f2e9c4b7d1a6e5f3c2b9a8d7e4f1c6b5a4d3e2f1a9b8c",
+    },
     create: {
       nombre: "Solutec - Ventanas",
       slug: "solutec-ventanas",
-      url: "https://solutecalumini.com/ventanas",
-      descripcion: "Landing page de ventanas de aluminio",
-      apiKey: "sk_live_solutec_ventanas_" + Math.random().toString(36).substring(2, 15),
+      url: "https://ventanas.jmauri.com",
+      descripcion: "Landing page de ventanas de aluminio - Solutec",
+      apiKey: "lf_8a3f2e9c4b7d1a6e5f3c2b9a8d7e4f1c6b5a4d3e2f1a9b8c",
       activa: true,
       notificarEmail: true,
       notificarPush: true,

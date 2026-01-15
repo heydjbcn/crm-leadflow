@@ -71,5 +71,5 @@ EXPOSE 3001
 ENV PORT=3001
 ENV HOSTNAME="0.0.0.0"
 
-# Run migrations and start server
-CMD ["sh", "-c", "npx prisma migrate deploy && node server.js"]
+# Start server (migrations should be run separately)
+CMD ["node", "server.js"]
